@@ -247,27 +247,27 @@ func initInMemoryStore() {
 	passHash := string(hash)
 
 	memStudents = []Student{
-		{ID: 1, StudentID: "STU101", Name: "Karthik Subbaraj", Email: "karthik@university.edu", Phone: "555-0101", Department: "Computer Science", Program: "B.Tech Computer Science", Year: 2, Section: "A", CreatedAt: time.Now()},
-		{ID: 2, StudentID: "STU102", Name: "Ananya Venkatesh", Email: "ananya@university.edu", Phone: "555-0102", Department: "Electrical Engineering", Program: "B.Tech Electrical Engineering", Year: 3, Section: "B", CreatedAt: time.Now()},
-		{ID: 3, StudentID: "STU103", Name: "Vignesh Ramanathan", Email: "vignesh@university.edu", Phone: "555-0103", Department: "Mechanical Engineering", Program: "B.Tech Mechanical Engineering", Year: 1, Section: "A", CreatedAt: time.Now()},
-		{ID: 4, StudentID: "STU104", Name: "Lakshmi Priya", Email: "lakshmi@university.edu", Phone: "555-0104", Department: "Computer Science", Program: "B.Tech Computer Science", Year: 4, Section: "A", CreatedAt: time.Now()},
-		{ID: 5, StudentID: "STU105", Name: "Arvind Swaminathan", Email: "arvind@university.edu", Phone: "555-0105", Department: "Information Technology", Program: "B.Tech Information Technology", Year: 2, Section: "B", CreatedAt: time.Now()},
+		{ID: 1, StudentID: "STU101", Name: "Priya Sharma", Email: "priya@university.edu", Phone: "555-0101", Department: "Computer Science", Program: "B.Tech Computer Science", Year: 2, Section: "A", CreatedAt: time.Now()},
+		{ID: 2, StudentID: "STU102", Name: "Meenu Patel", Email: "meenu@university.edu", Phone: "555-0102", Department: "Electrical Engineering", Program: "B.Tech Electrical Engineering", Year: 3, Section: "B", CreatedAt: time.Now()},
+		{ID: 3, StudentID: "STU103", Name: "Ananya Reddy", Email: "ananya@university.edu", Phone: "555-0103", Department: "Computer Science", Program: "B.Tech Computer Science", Year: 1, Section: "A", CreatedAt: time.Now()},
+		{ID: 4, StudentID: "STU104", Name: "Karthik Kumar", Email: "karthik@university.edu", Phone: "555-0104", Department: "Information Technology", Program: "B.Tech IT", Year: 4, Section: "C", CreatedAt: time.Now()},
+		{ID: 5, StudentID: "STU105", Name: "Rahul Verma", Email: "rahul@university.edu", Phone: "555-0105", Department: "Computer Science", Program: "B.Tech AI & ML", Year: 2, Section: "B", CreatedAt: time.Now()},
 	}
 
 	memFaculty = []Faculty{
 		{ID: 1, FacultyID: "FAC201", Name: "Dr. K. Seshadri", Email: "seshadri@university.edu", Phone: "555-0201", Department: "Computer Science", Designation: "Professor", CreatedAt: time.Now()},
-		{ID: 2, FacultyID: "FAC202", Name: "Dr. Meenakshi Sundaram", Email: "meenakshi@university.edu", Phone: "555-0202", Department: "Electrical Engineering", Designation: "Associate Professor", CreatedAt: time.Now()},
+		{ID: 2, FacultyID: "FAC202", Name: "Dr. Meenakshi", Email: "meenakshi@university.edu", Phone: "555-0202", Department: "Electrical Engineering", Designation: "Associate Professor", CreatedAt: time.Now()},
 		{ID: 3, FacultyID: "FAC203", Name: "Dr. N. Ramaswamy", Email: "ramaswamy@university.edu", Phone: "555-0203", Department: "Mechanical Engineering", Designation: "Professor", CreatedAt: time.Now()},
-		{ID: 4, FacultyID: "FAC204", Name: "Dr. Radhakrishnan Nair", Email: "radhakrishnan@university.edu", Phone: "555-0204", Department: "Information Technology", Designation: "Assistant Professor", CreatedAt: time.Now()},
-		{ID: 5, FacultyID: "FAC205", Name: "Dr. C. V. Raman", Email: "raman@university.edu", Phone: "555-0205", Department: "Computer Science", Designation: "Department Head", CreatedAt: time.Now()},
+		{ID: 4, FacultyID: "FAC204", Name: "Dr. Radhakrishnan", Email: "radhakrishnan@university.edu", Phone: "555-0204", Department: "Information Technology", Designation: "Associate Professor", CreatedAt: time.Now()},
+		{ID: 5, FacultyID: "FAC205", Name: "Dr. C. V. Raman", Email: "raman@university.edu", Phone: "555-0205", Department: "Computer Science", Designation: "Assistant Professor", CreatedAt: time.Now()},
 	}
 
 	memUsers = []User{
-		{ID: 1, Username: "STU101", Email: "karthik@university.edu", PasswordHash: passHash, Role: "student", RefID: 1, CreatedAt: time.Now()},
-		{ID: 2, Username: "STU102", Email: "ananya@university.edu", PasswordHash: passHash, Role: "student", RefID: 2, CreatedAt: time.Now()},
-		{ID: 3, Username: "STU103", Email: "vignesh@university.edu", PasswordHash: passHash, Role: "student", RefID: 3, CreatedAt: time.Now()},
-		{ID: 4, Username: "STU104", Email: "lakshmi@university.edu", PasswordHash: passHash, Role: "student", RefID: 4, CreatedAt: time.Now()},
-		{ID: 5, Username: "STU105", Email: "arvind@university.edu", PasswordHash: passHash, Role: "student", RefID: 5, CreatedAt: time.Now()},
+		{ID: 1, Username: "STU101", Email: "priya@university.edu", PasswordHash: passHash, Role: "student", RefID: 1, CreatedAt: time.Now()},
+		{ID: 2, Username: "STU102", Email: "meenu@university.edu", PasswordHash: passHash, Role: "student", RefID: 2, CreatedAt: time.Now()},
+		{ID: 3, Username: "STU103", Email: "ananya@university.edu", PasswordHash: passHash, Role: "student", RefID: 3, CreatedAt: time.Now()},
+		{ID: 4, Username: "STU104", Email: "karthik@university.edu", PasswordHash: passHash, Role: "student", RefID: 4, CreatedAt: time.Now()},
+		{ID: 5, Username: "STU105", Email: "rahul@university.edu", PasswordHash: passHash, Role: "student", RefID: 5, CreatedAt: time.Now()},
 		{ID: 6, Username: "FAC201", Email: "seshadri@university.edu", PasswordHash: passHash, Role: "faculty", RefID: 1, CreatedAt: time.Now()},
 		{ID: 7, Username: "FAC202", Email: "meenakshi@university.edu", PasswordHash: passHash, Role: "faculty", RefID: 2, CreatedAt: time.Now()},
 		{ID: 8, Username: "FAC203", Email: "ramaswamy@university.edu", PasswordHash: passHash, Role: "faculty", RefID: 3, CreatedAt: time.Now()},
@@ -438,30 +438,33 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 	var courseCount int
 	db.QueryRow(ctx, "SELECT COUNT(*) FROM courses").Scan(&courseCount)
 
-	log.Printf("Ensuring database records seeded into PostgreSQL (existing courses: %d)...", courseCount)
+	log.Printf("Ensuring full database records UPSERTED into PostgreSQL (existing courses: %d)...", courseCount)
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	passHash := string(hash)
 
 	db.Exec(ctx, `INSERT INTO students (id, student_id, name, email, phone, department, program, year, section) VALUES
-		(1, 'STU101', 'Alex Johnson', 'alex@university.edu', '555-0101', 'Computer Science', 'B.Tech Computer Science', 2, 'A'),
-		(2, 'STU102', 'Sarah Williams', 'sarah@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B'),
-		(3, 'STU103', 'Vignesh Kumar', 'vignesh@university.edu', '555-0103', 'Computer Science', 'B.Tech Computer Science', 1, 'A'),
-		(4, 'STU104', 'Lakshmi Narayanan', 'lakshmi@university.edu', '555-0104', 'Information Technology', 'B.Tech IT', 4, 'C'),
-		(5, 'STU105', 'Arvind Swamy', 'arvind@university.edu', '555-0105', 'Computer Science', 'B.Tech AI & ML', 2, 'B')
-		ON CONFLICT DO NOTHING;`)
+		(1, 'STU101', 'Priya Sharma', 'priya@university.edu', '555-0101', 'Computer Science', 'B.Tech Computer Science', 2, 'A'),
+		(2, 'STU102', 'Meenu Patel', 'meenu@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B'),
+		(3, 'STU103', 'Ananya Reddy', 'ananya@university.edu', '555-0103', 'Computer Science', 'B.Tech Computer Science', 1, 'A'),
+		(4, 'STU104', 'Karthik Kumar', 'karthik@university.edu', '555-0104', 'Information Technology', 'B.Tech IT', 4, 'C'),
+		(5, 'STU105', 'Rahul Verma', 'rahul@university.edu', '555-0105', 'Computer Science', 'B.Tech AI & ML', 2, 'B')
+		ON CONFLICT (id) DO UPDATE SET 
+			name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, department = EXCLUDED.department, program = EXCLUDED.program;`)
 
 	db.Exec(ctx, `INSERT INTO faculty (id, faculty_id, name, email, phone, department, designation) VALUES
-		(1, 'FAC201', 'Dr. Robert Smith', 'robert@university.edu', '555-0201', 'Computer Science', 'Professor'),
-		(2, 'FAC202', 'Dr. Emily Davis', 'emily@university.edu', '555-0202', 'Electrical Engineering', 'Associate Professor'),
-		(3, 'FAC203', 'Dr. Ramaswamy', 'ramaswamy@university.edu', '555-0203', 'Mechanical Engineering', 'Professor'),
+		(1, 'FAC201', 'Dr. K. Seshadri', 'seshadri@university.edu', '555-0201', 'Computer Science', 'Professor'),
+		(2, 'FAC202', 'Dr. Meenakshi', 'meenakshi@university.edu', '555-0202', 'Electrical Engineering', 'Associate Professor'),
+		(3, 'FAC203', 'Dr. N. Ramaswamy', 'ramaswamy@university.edu', '555-0203', 'Mechanical Engineering', 'Professor'),
 		(4, 'FAC204', 'Dr. Radhakrishnan', 'radhakrishnan@university.edu', '555-0204', 'Information Technology', 'Associate Professor'),
-		(5, 'FAC205', 'Dr. Raman', 'raman@university.edu', '555-0205', 'Computer Science', 'Assistant Professor')
-		ON CONFLICT DO NOTHING;`)
+		(5, 'FAC205', 'Dr. C. V. Raman', 'raman@university.edu', '555-0205', 'Computer Science', 'Assistant Professor')
+		ON CONFLICT (id) DO UPDATE SET 
+			name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, department = EXCLUDED.department, designation = EXCLUDED.designation;`)
 
 	db.Exec(ctx, `INSERT INTO semesters (id, name, code, is_active, registration_open) VALUES
 		(1, 'Semester 1', 'SEM1', false, false),
 		(2, 'Semester 2', 'SEM2', true, true)
-		ON CONFLICT DO NOTHING;`)
+		ON CONFLICT (id) DO UPDATE SET 
+			name = EXCLUDED.name, is_active = EXCLUDED.is_active, registration_open = EXCLUDED.registration_open;`)
 
 	db.Exec(ctx, `INSERT INTO courses (id, course_id, course_name, department, credits, description) VALUES
 		(1, 'CS101', 'Data Structures & Algorithms', 'Computer Science', 4, 'Fundamental concepts of data structures, complexity analysis, and algorithms.'),
@@ -475,7 +478,8 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 		(9, 'CYB401', 'Ethical Hacking & Penetration Testing', 'Information Technology', 4, 'Vulnerability assessment, network penetration testing, web application security auditing, exploit development, and defense countermeasures.'),
 		(10, 'AI402', 'Applied Deep Learning & Computer Vision', 'Computer Science', 4, 'Convolutional Neural Networks (CNNs), Object Detection, Image Segmentation, GANs, and real-time video analytics.'),
 		(11, 'IT305', 'Cloud Cyber Threat Defense & Incident Response', 'Information Technology', 3, 'Securing AWS/Azure cloud infrastructure, Zero Trust architecture, SIEM log monitoring, threat hunting, and rapid incident response.')
-		ON CONFLICT DO NOTHING;`)
+		ON CONFLICT (id) DO UPDATE SET 
+			course_name = EXCLUDED.course_name, department = EXCLUDED.department, credits = EXCLUDED.credits, description = EXCLUDED.description;`)
 
 	db.Exec(ctx, `INSERT INTO course_offerings (id, course_id, semester_id, faculty_id, max_capacity) VALUES
 		(1, 1, 2, 1, 60),
@@ -489,27 +493,46 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 		(9, 9, 2, 4, 60),
 		(10, 10, 2, 5, 60),
 		(11, 11, 2, 4, 60)
-		ON CONFLICT DO NOTHING;`)
+		ON CONFLICT (id) DO UPDATE SET 
+			faculty_id = EXCLUDED.faculty_id, semester_id = EXCLUDED.semester_id, max_capacity = EXCLUDED.max_capacity;`)
 
 	db.Exec(ctx, `INSERT INTO course_registrations (id, student_id, course_offering_id, status) VALUES
 		(1, 1, 1, 'registered'),
-		(2, 1, 3, 'completed'),
-		(3, 2, 2, 'registered'),
-		(4, 2, 4, 'completed')
-		ON CONFLICT DO NOTHING;`)
+		(2, 1, 7, 'registered'),
+		(3, 1, 8, 'registered'),
+		(4, 1, 3, 'completed'),
+		(5, 2, 2, 'registered'),
+		(6, 2, 9, 'registered'),
+		(7, 2, 4, 'completed'),
+		(8, 3, 1, 'registered'),
+		(9, 3, 10, 'registered'),
+		(10, 4, 6, 'registered'),
+		(11, 4, 11, 'registered'),
+		(12, 5, 5, 'registered'),
+		(13, 5, 7, 'registered')
+		ON CONFLICT (id) DO UPDATE SET 
+			status = EXCLUDED.status;`)
 
 	db.Exec(ctx, `INSERT INTO results (id, student_id, course_offering_id, marks, grade, remarks, semester_name) VALUES
-		(1, 1, 3, 92.5, 'A+', 'Outstanding performance in algorithms', 'Semester 1'),
-		(2, 2, 4, 84.0, 'A', 'Excellent lab coursework and exam result', 'Semester 1')
-		ON CONFLICT DO NOTHING;`)
+		(1, 1, 3, 95.0, 'A+', 'Outstanding performance in algorithms', 'Semester 1'),
+		(2, 2, 4, 88.0, 'A', 'Excellent lab coursework and exam result', 'Semester 1')
+		ON CONFLICT (id) DO UPDATE SET 
+			marks = EXCLUDED.marks, grade = EXCLUDED.grade, remarks = EXCLUDED.remarks;`)
 
-	db.Exec(ctx, `INSERT INTO users (username, email, password_hash, role, ref_id) VALUES
-		('STU101', 'alex@university.edu', $1, 'student', 1),
-		('STU102', 'sarah@university.edu', $1, 'student', 2),
-		('FAC201', 'robert@university.edu', $1, 'faculty', 1),
-		('FAC202', 'emily@university.edu', $1, 'faculty', 2),
-		('admin', 'admin@university.edu', $1, 'admin', 0)
-		ON CONFLICT DO NOTHING;`, passHash)
+	db.Exec(ctx, `INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
+		(1, 'STU101', 'priya@university.edu', $1, 'student', 1),
+		(2, 'STU102', 'meenu@university.edu', $1, 'student', 2),
+		(3, 'STU103', 'ananya@university.edu', $1, 'student', 3),
+		(4, 'STU104', 'karthik@university.edu', $1, 'student', 4),
+		(5, 'STU105', 'rahul@university.edu', $1, 'student', 5),
+		(6, 'FAC201', 'seshadri@university.edu', $1, 'faculty', 1),
+		(7, 'FAC202', 'meenakshi@university.edu', $1, 'faculty', 2),
+		(8, 'FAC203', 'ramaswamy@university.edu', $1, 'faculty', 3),
+		(9, 'FAC204', 'radhakrishnan@university.edu', $1, 'faculty', 4),
+		(10, 'FAC205', 'raman@university.edu', $1, 'faculty', 5),
+		(11, 'admin', 'admin@university.edu', $1, 'admin', 0)
+		ON CONFLICT (username) DO UPDATE SET 
+			email = EXCLUDED.email, password_hash = EXCLUDED.password_hash, role = EXCLUDED.role, ref_id = EXCLUDED.ref_id;`, passHash)
 }
 
 // Authentication and token utilities
