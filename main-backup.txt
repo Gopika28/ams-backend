@@ -1,0 +1,318 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+)
+
+var db *pgx.Conn
+
+type Student struct {
+	ID         int       `json:"id"`
+	StudentID  string    `json:"student_id"`
+	Name       string    `json:"name"`
+	Email      string    `json:"email"`
+	Phone      string    `json:"phone"`
+	Department string    `json:"department"`
+	Year       int       `json:"year"`
+	Section    string    `json:"section"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	response := map[string]string{
+		"status":  "success",
+		"message": "AMS backend is running",
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
+func dbHealthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := db.Ping(ctx)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "Database connection failed",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "success",
+		"message": "PostgreSQL database connection is working",
+	})
+}
+
+func studentsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case http.MethodGet:
+		getStudents(w, r)
+
+	case http.MethodPost:
+		createStudent(w, r)
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func getStudents(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := db.Query(ctx, `
+		SELECT id, student_id, name, email, phone, department, year, section, created_at
+		FROM students
+		ORDER BY id
+	`)
+	if err != nil {
+		http.Error(w, "Failed to fetch students", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	students := []Student{}
+
+	for rows.Next() {
+		var s Student
+
+		err := rows.Scan(
+			&s.ID,
+			&s.StudentID,
+			&s.Name,
+			&s.Email,
+			&s.Phone,
+			&s.Department,
+			&s.Year,
+			&s.Section,
+			&s.CreatedAt,
+		)
+
+		if err != nil {
+			http.Error(w, "Failed to read student data", http.StatusInternalServerError)
+			return
+		}
+
+		students = append(students, s)
+	}
+
+	if err := rows.Err(); err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(students)
+}
+
+func createStudent(w http.ResponseWriter, r *http.Request) {
+	var student Student
+
+	err := json.NewDecoder(r.Body).Decode(&student)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	student.StudentID = strings.TrimSpace(student.StudentID)
+	student.Name = strings.TrimSpace(student.Name)
+	student.Email = strings.TrimSpace(student.Email)
+
+	if student.StudentID == "" || student.Name == "" || student.Email == "" {
+		http.Error(w, "student_id, name and email are required", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.QueryRow(ctx, `
+		INSERT INTO students
+		(student_id, name, email, phone, department, year, section)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, created_at
+	`,
+		student.StudentID,
+		student.Name,
+		student.Email,
+		student.Phone,
+		student.Department,
+		student.Year,
+		student.Section,
+	).Scan(&student.ID, &student.CreatedAt)
+
+	if err != nil {
+		http.Error(w, "Failed to create student: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(student)
+}
+
+func studentByIDHandler(w http.ResponseWriter, r *http.Request) {
+	idText := strings.TrimPrefix(r.URL.Path, "/api/students/")
+
+	id, err := strconv.Atoi(idText)
+	if err != nil {
+		http.Error(w, "Invalid student ID", http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodPut:
+		updateStudent(w, r, id)
+
+	case http.MethodDelete:
+		deleteStudent(w, r, id)
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func updateStudent(w http.ResponseWriter, r *http.Request, id int) {
+	var student Student
+
+	err := json.NewDecoder(r.Body).Decode(&student)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	student.StudentID = strings.TrimSpace(student.StudentID)
+	student.Name = strings.TrimSpace(student.Name)
+	student.Email = strings.TrimSpace(student.Email)
+
+	if student.StudentID == "" || student.Name == "" || student.Email == "" {
+		http.Error(w, "student_id, name and email are required", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.QueryRow(ctx, `
+		UPDATE students
+		SET student_id = $1,
+			name = $2,
+			email = $3,
+			phone = $4,
+			department = $5,
+			year = $6,
+			section = $7
+		WHERE id = $8
+		RETURNING id, created_at
+	`,
+		student.StudentID,
+		student.Name,
+		student.Email,
+		student.Phone,
+		student.Department,
+		student.Year,
+		student.Section,
+		id,
+	).Scan(&student.ID, &student.CreatedAt)
+
+	if err != nil {
+		http.Error(w, "Failed to update student: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(student)
+}
+
+func deleteStudent(w http.ResponseWriter, r *http.Request, id int) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := db.Exec(ctx, "DELETE FROM students WHERE id = $1", id)
+	if err != nil {
+		http.Error(w, "Failed to delete student", http.StatusInternalServerError)
+		return
+	}
+
+	if result.RowsAffected() == 0 {
+		http.Error(w, "Student not found", http.StatusNotFound)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "success",
+		"message": "Student deleted successfully",
+	})
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func main() {
+	password := os.Getenv("AMS_DB_PASSWORD")
+
+	if password == "" {
+		log.Fatal("AMS_DB_PASSWORD environment variable is not set")
+	}
+
+	databaseURL := "postgres://postgres:" + password + "@localhost:5432/ams"
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var err error
+
+	db, err = pgx.Connect(ctx, databaseURL)
+	if err != nil {
+		log.Fatal("Unable to connect to PostgreSQL:", err)
+	}
+
+	defer db.Close(context.Background())
+
+	if err := db.Ping(ctx); err != nil {
+		log.Fatal("PostgreSQL ping failed:", err)
+	}
+
+	log.Println("Connected to PostgreSQL database: ams")
+
+	http.HandleFunc("/api/health", healthHandler)
+	http.HandleFunc("/api/db-health", dbHealthHandler)
+	http.HandleFunc("/api/students", studentsHandler)
+	http.HandleFunc("/api/students/", studentByIDHandler)
+
+	log.Println("AMS backend running on http://localhost:8080")
+
+	handler := corsMiddleware(http.DefaultServeMux)
+
+	err = http.ListenAndServe(":8080", handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
