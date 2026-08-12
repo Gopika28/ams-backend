@@ -444,12 +444,18 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 
 	db.Exec(ctx, `INSERT INTO students (id, student_id, name, email, phone, department, program, year, section) VALUES
 		(1, 'STU101', 'Alex Johnson', 'alex@university.edu', '555-0101', 'Computer Science', 'B.Tech Computer Science', 2, 'A'),
-		(2, 'STU102', 'Sarah Williams', 'sarah@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B')
+		(2, 'STU102', 'Sarah Williams', 'sarah@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B'),
+		(3, 'STU103', 'Vignesh Kumar', 'vignesh@university.edu', '555-0103', 'Computer Science', 'B.Tech Computer Science', 1, 'A'),
+		(4, 'STU104', 'Lakshmi Narayanan', 'lakshmi@university.edu', '555-0104', 'Information Technology', 'B.Tech IT', 4, 'C'),
+		(5, 'STU105', 'Arvind Swamy', 'arvind@university.edu', '555-0105', 'Computer Science', 'B.Tech AI & ML', 2, 'B')
 		ON CONFLICT DO NOTHING;`)
 
 	db.Exec(ctx, `INSERT INTO faculty (id, faculty_id, name, email, phone, department, designation) VALUES
 		(1, 'FAC201', 'Dr. Robert Smith', 'robert@university.edu', '555-0201', 'Computer Science', 'Professor'),
-		(2, 'FAC202', 'Dr. Emily Davis', 'emily@university.edu', '555-0202', 'Electrical Engineering', 'Associate Professor')
+		(2, 'FAC202', 'Dr. Emily Davis', 'emily@university.edu', '555-0202', 'Electrical Engineering', 'Associate Professor'),
+		(3, 'FAC203', 'Dr. Ramaswamy', 'ramaswamy@university.edu', '555-0203', 'Mechanical Engineering', 'Professor'),
+		(4, 'FAC204', 'Dr. Radhakrishnan', 'radhakrishnan@university.edu', '555-0204', 'Information Technology', 'Associate Professor'),
+		(5, 'FAC205', 'Dr. Raman', 'raman@university.edu', '555-0205', 'Computer Science', 'Assistant Professor')
 		ON CONFLICT DO NOTHING;`)
 
 	db.Exec(ctx, `INSERT INTO semesters (id, name, code, is_active, registration_open) VALUES
