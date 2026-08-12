@@ -438,11 +438,11 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 	seedCtx, seedCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer seedCancel()
 
-	log.Println("Running database seed & sync in PostgreSQL...")
+	log.Println("Unconditionally running database seed & sync in PostgreSQL...")
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	passHash := string(hash)
 
-	// 1. Ensure Students Exist & Updated
+	// 1. Ensure Students Exist & Sync Names
 	db.Exec(seedCtx, `INSERT INTO students (id, student_id, name, email, phone, department, program, year, section) VALUES
 		(1, 'STU101', 'Priya Sharma', 'priya@university.edu', '555-0101', 'Computer Science', 'B.Tech Computer Science', 2, 'A'),
 		(2, 'STU102', 'Meenu Patel', 'meenu@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B'),
@@ -451,13 +451,13 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(5, 'STU105', 'Rahul Verma', 'rahul@university.edu', '555-0105', 'Computer Science', 'B.Tech AI & ML', 2, 'B')
 		ON CONFLICT DO NOTHING;`)
 
-	db.Exec(seedCtx, `UPDATE students SET name = 'Priya Sharma', email = 'priya@university.edu' WHERE LOWER(student_id) = 'stu101' OR id = 1;`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Meenu Patel', email = 'meenu@university.edu' WHERE LOWER(student_id) = 'stu102' OR id = 2;`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Ananya Reddy', email = 'ananya@university.edu' WHERE LOWER(student_id) = 'stu103' OR id = 3;`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Karthik Kumar', email = 'karthik@university.edu' WHERE LOWER(student_id) = 'stu104' OR id = 4;`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Rahul Verma', email = 'rahul@university.edu' WHERE LOWER(student_id) = 'stu105' OR id = 5;`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Priya Sharma', email = 'priya@university.edu' WHERE id = 1 OR student_id = 'STU101';`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Meenu Patel', email = 'meenu@university.edu' WHERE id = 2 OR student_id = 'STU102';`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Ananya Reddy', email = 'ananya@university.edu' WHERE id = 3 OR student_id = 'STU103';`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Karthik Kumar', email = 'karthik@university.edu' WHERE id = 4 OR student_id = 'STU104';`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Rahul Verma', email = 'rahul@university.edu' WHERE id = 5 OR student_id = 'STU105';`)
 
-	// 2. Ensure Faculty Exist & Updated
+	// 2. Ensure Faculty Exist & Sync Names
 	db.Exec(seedCtx, `INSERT INTO faculty (id, faculty_id, name, email, phone, department, designation) VALUES
 		(1, 'FAC201', 'Dr. K. Seshadri', 'seshadri@university.edu', '555-0201', 'Computer Science', 'Professor'),
 		(2, 'FAC202', 'Dr. Meenakshi', 'meenakshi@university.edu', '555-0202', 'Electrical Engineering', 'Associate Professor'),
@@ -466,11 +466,11 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(5, 'FAC205', 'Dr. C. V. Raman', 'raman@university.edu', '555-0205', 'Computer Science', 'Assistant Professor')
 		ON CONFLICT DO NOTHING;`)
 
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. K. Seshadri', email = 'seshadri@university.edu' WHERE LOWER(faculty_id) = 'fac201' OR id = 1;`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Meenakshi', email = 'meenakshi@university.edu' WHERE LOWER(faculty_id) = 'fac202' OR id = 2;`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. N. Ramaswamy', email = 'ramaswamy@university.edu' WHERE LOWER(faculty_id) = 'fac203' OR id = 3;`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Radhakrishnan', email = 'radhakrishnan@university.edu' WHERE LOWER(faculty_id) = 'fac204' OR id = 4;`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. C. V. Raman', email = 'raman@university.edu' WHERE LOWER(faculty_id) = 'fac205' OR id = 5;`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. K. Seshadri', email = 'seshadri@university.edu' WHERE id = 1 OR faculty_id = 'FAC201';`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Meenakshi', email = 'meenakshi@university.edu' WHERE id = 2 OR faculty_id = 'FAC202';`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. N. Ramaswamy', email = 'ramaswamy@university.edu' WHERE id = 3 OR faculty_id = 'FAC203';`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Radhakrishnan', email = 'radhakrishnan@university.edu' WHERE id = 4 OR faculty_id = 'FAC204';`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. C. V. Raman', email = 'raman@university.edu' WHERE id = 5 OR faculty_id = 'FAC205';`)
 
 	// 3. Ensure Semesters Exist
 	db.Exec(seedCtx, `INSERT INTO semesters (id, name, code, is_active, registration_open) VALUES
@@ -493,7 +493,7 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(11, 'IT305', 'Cloud Cyber Threat Defense & Incident Response', 'Information Technology', 3, 'Securing AWS/Azure cloud infrastructure, Zero Trust architecture, SIEM log monitoring, threat hunting, and rapid incident response.')
 		ON CONFLICT DO NOTHING;`)
 
-	// 5. Ensure Course Offerings Exist
+	// 5. Ensure Course Offerings Exist & Sync Faculty Assignments
 	db.Exec(seedCtx, `INSERT INTO course_offerings (id, course_id, semester_id, faculty_id, max_capacity) VALUES
 		(1, 1, 2, 1, 60),
 		(2, 2, 2, 2, 60),
@@ -506,9 +506,9 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(9, 9, 2, 4, 60),
 		(10, 10, 2, 5, 60),
 		(11, 11, 2, 4, 60)
-		ON CONFLICT DO NOTHING;`)
+		ON CONFLICT (id) DO UPDATE SET faculty_id = EXCLUDED.faculty_id, semester_id = EXCLUDED.semester_id;`)
 
-	// 6. Ensure Registrations Exist
+	// 6. Ensure Registrations Exist & Sync Status
 	db.Exec(seedCtx, `INSERT INTO course_registrations (id, student_id, course_offering_id, status) VALUES
 		(1, 1, 1, 'registered'),
 		(2, 1, 7, 'registered'),
@@ -523,15 +523,15 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(11, 4, 11, 'registered'),
 		(12, 5, 5, 'registered'),
 		(13, 5, 7, 'registered')
-		ON CONFLICT DO NOTHING;`)
+		ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status;`)
 
-	// 7. Ensure Results Exist
+	// 7. Ensure Results Exist & Sync Grade
 	db.Exec(seedCtx, `INSERT INTO results (id, student_id, course_offering_id, marks, grade, remarks, semester_name) VALUES
 		(1, 1, 3, 95.0, 'A+', 'Outstanding performance in algorithms', 'Semester 1'),
 		(2, 2, 4, 88.0, 'A', 'Excellent lab coursework and exam result', 'Semester 1')
-		ON CONFLICT DO NOTHING;`)
+		ON CONFLICT (id) DO UPDATE SET marks = EXCLUDED.marks, grade = EXCLUDED.grade;`)
 
-	// 8. Ensure Users Exist & Updated
+	// 8. Ensure Users Exist & Sync Emails
 	db.Exec(seedCtx, `INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
 		(1, 'STU101', 'priya@university.edu', $1, 'student', 1),
 		(2, 'STU102', 'meenu@university.edu', $1, 'student', 2),
@@ -546,11 +546,11 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(11, 'admin', 'admin@university.edu', $1, 'admin', 0)
 		ON CONFLICT DO NOTHING;`, passHash)
 
-	db.Exec(seedCtx, `UPDATE users SET email = 'priya@university.edu' WHERE LOWER(username) = 'stu101' OR id = 1;`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'meenu@university.edu' WHERE LOWER(username) = 'stu102' OR id = 2;`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'ananya@university.edu' WHERE LOWER(username) = 'stu103' OR id = 3;`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'karthik@university.edu' WHERE LOWER(username) = 'stu104' OR id = 4;`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'rahul@university.edu' WHERE LOWER(username) = 'stu105' OR id = 5;`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'priya@university.edu' WHERE id = 1 OR username = 'STU101';`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'meenu@university.edu' WHERE id = 2 OR username = 'STU102';`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'ananya@university.edu' WHERE id = 3 OR username = 'STU103';`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'karthik@university.edu' WHERE id = 4 OR username = 'STU104';`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'rahul@university.edu' WHERE id = 5 OR username = 'STU105';`)
 }
 
 // Authentication and token utilities
