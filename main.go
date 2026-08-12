@@ -870,7 +870,7 @@ func studentCoursesHandler(w http.ResponseWriter, r *http.Request) {
 		SELECT 
 			cr.id, cr.student_id, cr.course_offering_id, cr.status, cr.registration_date,
 			c.course_id, c.course_name, c.credits, s.name, COALESCE(f.name, 'Unassigned'),
-			COALESCE(r.grade, ''), COALESCE(r.marks, 0)
+			COALESCE(r.grade, ''), COALESCE(r.marks::float8, 0.0)
 		FROM course_registrations cr
 		JOIN course_offerings co ON cr.course_offering_id = co.id
 		JOIN courses c ON co.course_id = c.id
@@ -1307,7 +1307,7 @@ func facultyEnrolledStudentsHandler(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Query(ctx, `
 		SELECT 
-			s.id, s.student_id, s.name, s.email, COALESCE(s.phone, ''), COALESCE(r.grade, ''), COALESCE(r.marks, 0)
+			s.id, s.student_id, s.name, s.email, COALESCE(s.phone, ''), COALESCE(r.grade, ''), COALESCE(r.marks::float8, 0.0)
 		FROM course_registrations cr
 		JOIN students s ON cr.student_id = s.id
 		LEFT JOIN results r ON (r.student_id = cr.student_id AND r.course_offering_id = cr.course_offering_id)
@@ -2000,6 +2000,8 @@ func adminCoursesHandler(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			item.FacultyID = facID
 			list = append(list, item)
+		} else {
+			log.Println("adminCoursesHandler scan error:", err)
 		}
 	}
 	json.NewEncoder(w).Encode(list)
