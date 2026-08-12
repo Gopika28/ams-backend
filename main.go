@@ -435,37 +435,47 @@ func initTables(ctx context.Context) error {
 }
 
 func seedDatabaseIfEmpty(ctx context.Context) {
-	var courseCount int
-	db.QueryRow(ctx, "SELECT COUNT(*) FROM courses").Scan(&courseCount)
-
-	log.Printf("Ensuring full database records UPSERTED into PostgreSQL (existing courses: %d)...", courseCount)
+	log.Println("Running database seed & sync in PostgreSQL...")
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	passHash := string(hash)
 
+	// 1. Ensure Students Exist & Updated
 	db.Exec(ctx, `INSERT INTO students (id, student_id, name, email, phone, department, program, year, section) VALUES
 		(1, 'STU101', 'Priya Sharma', 'priya@university.edu', '555-0101', 'Computer Science', 'B.Tech Computer Science', 2, 'A'),
 		(2, 'STU102', 'Meenu Patel', 'meenu@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B'),
 		(3, 'STU103', 'Ananya Reddy', 'ananya@university.edu', '555-0103', 'Computer Science', 'B.Tech Computer Science', 1, 'A'),
 		(4, 'STU104', 'Karthik Kumar', 'karthik@university.edu', '555-0104', 'Information Technology', 'B.Tech IT', 4, 'C'),
 		(5, 'STU105', 'Rahul Verma', 'rahul@university.edu', '555-0105', 'Computer Science', 'B.Tech AI & ML', 2, 'B')
-		ON CONFLICT (id) DO UPDATE SET 
-			name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, department = EXCLUDED.department, program = EXCLUDED.program;`)
+		ON CONFLICT DO NOTHING;`)
 
+	db.Exec(ctx, `UPDATE students SET name = 'Priya Sharma', email = 'priya@university.edu' WHERE student_id = 'STU101';`)
+	db.Exec(ctx, `UPDATE students SET name = 'Meenu Patel', email = 'meenu@university.edu' WHERE student_id = 'STU102';`)
+	db.Exec(ctx, `UPDATE students SET name = 'Ananya Reddy', email = 'ananya@university.edu' WHERE student_id = 'STU103';`)
+	db.Exec(ctx, `UPDATE students SET name = 'Karthik Kumar', email = 'karthik@university.edu' WHERE student_id = 'STU104';`)
+	db.Exec(ctx, `UPDATE students SET name = 'Rahul Verma', email = 'rahul@university.edu' WHERE student_id = 'STU105';`)
+
+	// 2. Ensure Faculty Exist & Updated
 	db.Exec(ctx, `INSERT INTO faculty (id, faculty_id, name, email, phone, department, designation) VALUES
 		(1, 'FAC201', 'Dr. K. Seshadri', 'seshadri@university.edu', '555-0201', 'Computer Science', 'Professor'),
 		(2, 'FAC202', 'Dr. Meenakshi', 'meenakshi@university.edu', '555-0202', 'Electrical Engineering', 'Associate Professor'),
 		(3, 'FAC203', 'Dr. N. Ramaswamy', 'ramaswamy@university.edu', '555-0203', 'Mechanical Engineering', 'Professor'),
 		(4, 'FAC204', 'Dr. Radhakrishnan', 'radhakrishnan@university.edu', '555-0204', 'Information Technology', 'Associate Professor'),
 		(5, 'FAC205', 'Dr. C. V. Raman', 'raman@university.edu', '555-0205', 'Computer Science', 'Assistant Professor')
-		ON CONFLICT (id) DO UPDATE SET 
-			name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, department = EXCLUDED.department, designation = EXCLUDED.designation;`)
+		ON CONFLICT DO NOTHING;`)
 
+	db.Exec(ctx, `UPDATE faculty SET name = 'Dr. K. Seshadri', email = 'seshadri@university.edu' WHERE faculty_id = 'FAC201';`)
+	db.Exec(ctx, `UPDATE faculty SET name = 'Dr. Meenakshi', email = 'meenakshi@university.edu' WHERE faculty_id = 'FAC202';`)
+	db.Exec(ctx, `UPDATE faculty SET name = 'Dr. N. Ramaswamy', email = 'ramaswamy@university.edu' WHERE faculty_id = 'FAC203';`)
+	db.Exec(ctx, `UPDATE faculty SET name = 'Dr. Radhakrishnan', email = 'radhakrishnan@university.edu' WHERE faculty_id = 'FAC204';`)
+	db.Exec(ctx, `UPDATE faculty SET name = 'Dr. C. V. Raman', email = 'raman@university.edu' WHERE faculty_id = 'FAC205';`)
+
+	// 3. Ensure Semesters Exist
 	db.Exec(ctx, `INSERT INTO semesters (id, name, code, is_active, registration_open) VALUES
 		(1, 'Semester 1', 'SEM1', false, false),
 		(2, 'Semester 2', 'SEM2', true, true)
-		ON CONFLICT (id) DO UPDATE SET 
-			name = EXCLUDED.name, is_active = EXCLUDED.is_active, registration_open = EXCLUDED.registration_open;`)
+		ON CONFLICT DO NOTHING;`)
 
+	// 4. Ensure Courses Exist
 	db.Exec(ctx, `INSERT INTO courses (id, course_id, course_name, department, credits, description) VALUES
 		(1, 'CS101', 'Data Structures & Algorithms', 'Computer Science', 4, 'Fundamental concepts of data structures, complexity analysis, and algorithms.'),
 		(2, 'EE201', 'Circuit Analysis', 'Electrical Engineering', 3, 'Principles of linear circuit analysis, Kirchhoff laws, and network theorems.'),
@@ -478,9 +488,9 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 		(9, 'CYB401', 'Ethical Hacking & Penetration Testing', 'Information Technology', 4, 'Vulnerability assessment, network penetration testing, web application security auditing, exploit development, and defense countermeasures.'),
 		(10, 'AI402', 'Applied Deep Learning & Computer Vision', 'Computer Science', 4, 'Convolutional Neural Networks (CNNs), Object Detection, Image Segmentation, GANs, and real-time video analytics.'),
 		(11, 'IT305', 'Cloud Cyber Threat Defense & Incident Response', 'Information Technology', 3, 'Securing AWS/Azure cloud infrastructure, Zero Trust architecture, SIEM log monitoring, threat hunting, and rapid incident response.')
-		ON CONFLICT (id) DO UPDATE SET 
-			course_name = EXCLUDED.course_name, department = EXCLUDED.department, credits = EXCLUDED.credits, description = EXCLUDED.description;`)
+		ON CONFLICT DO NOTHING;`)
 
+	// 5. Ensure Course Offerings Exist
 	db.Exec(ctx, `INSERT INTO course_offerings (id, course_id, semester_id, faculty_id, max_capacity) VALUES
 		(1, 1, 2, 1, 60),
 		(2, 2, 2, 2, 60),
@@ -493,9 +503,9 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 		(9, 9, 2, 4, 60),
 		(10, 10, 2, 5, 60),
 		(11, 11, 2, 4, 60)
-		ON CONFLICT (id) DO UPDATE SET 
-			faculty_id = EXCLUDED.faculty_id, semester_id = EXCLUDED.semester_id, max_capacity = EXCLUDED.max_capacity;`)
+		ON CONFLICT DO NOTHING;`)
 
+	// 6. Ensure Registrations Exist
 	db.Exec(ctx, `INSERT INTO course_registrations (id, student_id, course_offering_id, status) VALUES
 		(1, 1, 1, 'registered'),
 		(2, 1, 7, 'registered'),
@@ -510,15 +520,15 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 		(11, 4, 11, 'registered'),
 		(12, 5, 5, 'registered'),
 		(13, 5, 7, 'registered')
-		ON CONFLICT (id) DO UPDATE SET 
-			status = EXCLUDED.status;`)
+		ON CONFLICT DO NOTHING;`)
 
+	// 7. Ensure Results Exist
 	db.Exec(ctx, `INSERT INTO results (id, student_id, course_offering_id, marks, grade, remarks, semester_name) VALUES
 		(1, 1, 3, 95.0, 'A+', 'Outstanding performance in algorithms', 'Semester 1'),
 		(2, 2, 4, 88.0, 'A', 'Excellent lab coursework and exam result', 'Semester 1')
-		ON CONFLICT (id) DO UPDATE SET 
-			marks = EXCLUDED.marks, grade = EXCLUDED.grade, remarks = EXCLUDED.remarks;`)
+		ON CONFLICT DO NOTHING;`)
 
+	// 8. Ensure Users Exist & Updated
 	db.Exec(ctx, `INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
 		(1, 'STU101', 'priya@university.edu', $1, 'student', 1),
 		(2, 'STU102', 'meenu@university.edu', $1, 'student', 2),
@@ -531,8 +541,13 @@ func seedDatabaseIfEmpty(ctx context.Context) {
 		(9, 'FAC204', 'radhakrishnan@university.edu', $1, 'faculty', 4),
 		(10, 'FAC205', 'raman@university.edu', $1, 'faculty', 5),
 		(11, 'admin', 'admin@university.edu', $1, 'admin', 0)
-		ON CONFLICT (username) DO UPDATE SET 
-			email = EXCLUDED.email, password_hash = EXCLUDED.password_hash, role = EXCLUDED.role, ref_id = EXCLUDED.ref_id;`, passHash)
+		ON CONFLICT DO NOTHING;`, passHash)
+
+	db.Exec(ctx, `UPDATE users SET email = 'priya@university.edu' WHERE username = 'STU101';`)
+	db.Exec(ctx, `UPDATE users SET email = 'meenu@university.edu' WHERE username = 'STU102';`)
+	db.Exec(ctx, `UPDATE users SET email = 'ananya@university.edu' WHERE username = 'STU103';`)
+	db.Exec(ctx, `UPDATE users SET email = 'karthik@university.edu' WHERE username = 'STU104';`)
+	db.Exec(ctx, `UPDATE users SET email = 'rahul@university.edu' WHERE username = 'STU105';`)
 }
 
 // Authentication and token utilities
