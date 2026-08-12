@@ -2024,6 +2024,25 @@ func adminStatsHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	mode := "PostgreSQL"
+	if useMemoryDB {
+		mode = "In-Memory Fallback"
+	}
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "operational",
+		"service": "AMS Academic Management System Backend API",
+		"mode":    mode,
+		"health":  "/api/health",
+		"time":    time.Now().Format(time.RFC3339),
+	})
+}
+
 // Server entrypoint
 
 func main() {
@@ -2067,6 +2086,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Public / Health Routes
+	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc("/api/health", healthHandler)
 	mux.HandleFunc("/api/db-health", dbHealthHandler)
 	mux.HandleFunc("/api/auth/login", loginHandler)
