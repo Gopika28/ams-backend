@@ -451,11 +451,11 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(5, 'STU105', 'Rahul Verma', 'rahul@university.edu', '555-0105', 'Computer Science', 'B.Tech AI & ML', 2, 'B')
 		ON CONFLICT DO NOTHING;`)
 
-	db.Exec(seedCtx, `UPDATE students SET name = 'Priya Sharma', email = 'priya@university.edu' WHERE student_id = 'STU101';`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Meenu Patel', email = 'meenu@university.edu' WHERE student_id = 'STU102';`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Ananya Reddy', email = 'ananya@university.edu' WHERE student_id = 'STU103';`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Karthik Kumar', email = 'karthik@university.edu' WHERE student_id = 'STU104';`)
-	db.Exec(seedCtx, `UPDATE students SET name = 'Rahul Verma', email = 'rahul@university.edu' WHERE student_id = 'STU105';`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Priya Sharma', email = 'priya@university.edu' WHERE LOWER(student_id) = 'stu101' OR id = 1;`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Meenu Patel', email = 'meenu@university.edu' WHERE LOWER(student_id) = 'stu102' OR id = 2;`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Ananya Reddy', email = 'ananya@university.edu' WHERE LOWER(student_id) = 'stu103' OR id = 3;`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Karthik Kumar', email = 'karthik@university.edu' WHERE LOWER(student_id) = 'stu104' OR id = 4;`)
+	db.Exec(seedCtx, `UPDATE students SET name = 'Rahul Verma', email = 'rahul@university.edu' WHERE LOWER(student_id) = 'stu105' OR id = 5;`)
 
 	// 2. Ensure Faculty Exist & Updated
 	db.Exec(seedCtx, `INSERT INTO faculty (id, faculty_id, name, email, phone, department, designation) VALUES
@@ -466,11 +466,11 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(5, 'FAC205', 'Dr. C. V. Raman', 'raman@university.edu', '555-0205', 'Computer Science', 'Assistant Professor')
 		ON CONFLICT DO NOTHING;`)
 
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. K. Seshadri', email = 'seshadri@university.edu' WHERE faculty_id = 'FAC201';`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Meenakshi', email = 'meenakshi@university.edu' WHERE faculty_id = 'FAC202';`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. N. Ramaswamy', email = 'ramaswamy@university.edu' WHERE faculty_id = 'FAC203';`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Radhakrishnan', email = 'radhakrishnan@university.edu' WHERE faculty_id = 'FAC204';`)
-	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. C. V. Raman', email = 'raman@university.edu' WHERE faculty_id = 'FAC205';`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. K. Seshadri', email = 'seshadri@university.edu' WHERE LOWER(faculty_id) = 'fac201' OR id = 1;`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Meenakshi', email = 'meenakshi@university.edu' WHERE LOWER(faculty_id) = 'fac202' OR id = 2;`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. N. Ramaswamy', email = 'ramaswamy@university.edu' WHERE LOWER(faculty_id) = 'fac203' OR id = 3;`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. Radhakrishnan', email = 'radhakrishnan@university.edu' WHERE LOWER(faculty_id) = 'fac204' OR id = 4;`)
+	db.Exec(seedCtx, `UPDATE faculty SET name = 'Dr. C. V. Raman', email = 'raman@university.edu' WHERE LOWER(faculty_id) = 'fac205' OR id = 5;`)
 
 	// 3. Ensure Semesters Exist
 	db.Exec(seedCtx, `INSERT INTO semesters (id, name, code, is_active, registration_open) VALUES
@@ -546,11 +546,11 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(11, 'admin', 'admin@university.edu', $1, 'admin', 0)
 		ON CONFLICT DO NOTHING;`, passHash)
 
-	db.Exec(seedCtx, `UPDATE users SET email = 'priya@university.edu' WHERE username = 'STU101';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'meenu@university.edu' WHERE username = 'STU102';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'ananya@university.edu' WHERE username = 'STU103';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'karthik@university.edu' WHERE username = 'STU104';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'rahul@university.edu' WHERE username = 'STU105';`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'priya@university.edu' WHERE LOWER(username) = 'stu101' OR id = 1;`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'meenu@university.edu' WHERE LOWER(username) = 'stu102' OR id = 2;`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'ananya@university.edu' WHERE LOWER(username) = 'stu103' OR id = 3;`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'karthik@university.edu' WHERE LOWER(username) = 'stu104' OR id = 4;`)
+	db.Exec(seedCtx, `UPDATE users SET email = 'rahul@university.edu' WHERE LOWER(username) = 'stu105' OR id = 5;`)
 }
 
 // Authentication and token utilities
