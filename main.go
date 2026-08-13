@@ -2118,6 +2118,8 @@ func main() {
 				log.Println("PostgreSQL table init error:", errInit)
 			} else {
 				useMemoryDB = false
+				log.Println("Unconditionally running database seed & sync in PostgreSQL...")
+				seedDatabaseIfEmpty(initCtx)
 			}
 		} else {
 			useMemoryDB = true
