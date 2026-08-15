@@ -531,7 +531,7 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(2, 2, 4, 88.0, 'A', 'Excellent lab coursework and exam result', 'Semester 1')
 		ON CONFLICT (id) DO UPDATE SET marks = EXCLUDED.marks, grade = EXCLUDED.grade;`)
 
-	// 8. Ensure Users Exist & Sync Emails
+	// 8. Ensure Users Exist & Sync Emails and Passwords
 	db.Exec(seedCtx, `INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
 		(1, 'STU101', 'priya@university.edu', $1, 'student', 1),
 		(2, 'STU102', 'meenu@university.edu', $1, 'student', 2),
@@ -544,8 +544,9 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		(9, 'FAC204', 'radhakrishnan@university.edu', $1, 'faculty', 4),
 		(10, 'FAC205', 'raman@university.edu', $1, 'faculty', 5),
 		(11, 'admin', 'admin@university.edu', $1, 'admin', 0)
-		ON CONFLICT DO NOTHING;`, passHash)
+		ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, email = EXCLUDED.email;`, passHash)
 
+	db.Exec(seedCtx, `UPDATE users SET password_hash = $1 WHERE username IN ('STU101','STU102','STU103','STU104','STU105','FAC201','FAC202','FAC203','FAC204','FAC205','admin');`, passHash)
 	db.Exec(seedCtx, `UPDATE users SET email = 'priya@university.edu' WHERE id = 1 OR username = 'STU101';`)
 	db.Exec(seedCtx, `UPDATE users SET email = 'meenu@university.edu' WHERE id = 2 OR username = 'STU102';`)
 	db.Exec(seedCtx, `UPDATE users SET email = 'ananya@university.edu' WHERE id = 3 OR username = 'STU103';`)
