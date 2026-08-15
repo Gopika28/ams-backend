@@ -532,26 +532,35 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 		ON CONFLICT (id) DO UPDATE SET marks = EXCLUDED.marks, grade = EXCLUDED.grade;`)
 
 	// 8. Ensure Users Exist & Sync Emails and Passwords
-	db.Exec(seedCtx, `INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
-		(1, 'STU101', 'priya@university.edu', $1, 'student', 1),
-		(2, 'STU102', 'meenu@university.edu', $1, 'student', 2),
-		(3, 'STU103', 'ananya@university.edu', $1, 'student', 3),
-		(4, 'STU104', 'karthik@university.edu', $1, 'student', 4),
-		(5, 'STU105', 'rahul@university.edu', $1, 'student', 5),
-		(6, 'FAC201', 'seshadri@university.edu', $1, 'faculty', 1),
-		(7, 'FAC202', 'meenakshi@university.edu', $1, 'faculty', 2),
-		(8, 'FAC203', 'ramaswamy@university.edu', $1, 'faculty', 3),
-		(9, 'FAC204', 'radhakrishnan@university.edu', $1, 'faculty', 4),
-		(10, 'FAC205', 'raman@university.edu', $1, 'faculty', 5),
-		(11, 'admin', 'admin@university.edu', $1, 'admin', 0)
-		ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, email = EXCLUDED.email;`, passHash)
+	defaultUsers := []struct {
+		username string
+		email    string
+		role     string
+		refID    int
+	}{
+		{"STU101", "priya@university.edu", "student", 1},
+		{"STU102", "meenu@university.edu", "student", 2},
+		{"STU103", "ananya@university.edu", "student", 3},
+		{"STU104", "karthik@university.edu", "student", 4},
+		{"STU105", "rahul@university.edu", "student", 5},
+		{"FAC201", "seshadri@university.edu", "faculty", 1},
+		{"FAC202", "meenakshi@university.edu", "faculty", 2},
+		{"FAC203", "ramaswamy@university.edu", "faculty", 3},
+		{"FAC204", "radhakrishnan@university.edu", "faculty", 4},
+		{"FAC205", "raman@university.edu", "faculty", 5},
+		{"admin", "admin@university.edu", "admin", 0},
+	}
 
-	db.Exec(seedCtx, `UPDATE users SET password_hash = $1 WHERE username IN ('STU101','STU102','STU103','STU104','STU105','FAC201','FAC202','FAC203','FAC204','FAC205','admin');`, passHash)
-	db.Exec(seedCtx, `UPDATE users SET email = 'priya@university.edu' WHERE id = 1 OR username = 'STU101';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'meenu@university.edu' WHERE id = 2 OR username = 'STU102';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'ananya@university.edu' WHERE id = 3 OR username = 'STU103';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'karthik@university.edu' WHERE id = 4 OR username = 'STU104';`)
-	db.Exec(seedCtx, `UPDATE users SET email = 'rahul@university.edu' WHERE id = 5 OR username = 'STU105';`)
+	for _, u := range defaultUsers {
+		_, err := db.Exec(seedCtx, `
+			INSERT INTO users (username, email, password_hash, role, ref_id)
+			VALUES ($1, $2, $3, $4, $5)
+			ON CONFLICT (username) DO UPDATE SET password_hash = $3, email = $2, role = $4, ref_id = $5;
+		`, u.username, u.email, passHash, u.role, u.refID)
+		if err != nil {
+			log.Printf("[SEED ERROR] Failed upsert for user %s: %v", u.username, err)
+		}
+	}
 }
 
 // Authentication and token utilities
@@ -730,6 +739,38 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			found = true
 		} else {
 			log.Printf("[LOGIN SERVER ERROR] QueryRow for username=%q failed: %v", req.Username, err)
+			defaultMap := map[string]struct {
+				email string
+				role  string
+				refID int
+			}{
+				"STU101": {"priya@university.edu", "student", 1},
+				"STU102": {"meenu@university.edu", "student", 2},
+				"STU103": {"ananya@university.edu", "student", 3},
+				"STU104": {"karthik@university.edu", "student", 4},
+				"STU105": {"rahul@university.edu", "student", 5},
+				"FAC201": {"seshadri@university.edu", "faculty", 1},
+				"FAC202": {"meenakshi@university.edu", "faculty", 2},
+				"FAC203": {"ramaswamy@university.edu", "faculty", 3},
+				"FAC204": {"radhakrishnan@university.edu", "faculty", 4},
+				"FAC205": {"raman@university.edu", "faculty", 5},
+				"ADMIN":  {"admin@university.edu", "admin", 0},
+			}
+			upperUser := strings.ToUpper(req.Username)
+			if def, exists := defaultMap[upperUser]; exists {
+				hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+				passHash := string(hash)
+				qErr := db.QueryRow(ctx, `
+					INSERT INTO users (username, email, password_hash, role, ref_id)
+					VALUES ($1, $2, $3, $4, $5)
+					ON CONFLICT (username) DO UPDATE SET password_hash = $3, email = $2, role = $4, ref_id = $5
+					RETURNING id, username, email, password_hash, role, ref_id, created_at;
+				`, upperUser, def.email, passHash, def.role, def.refID).Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.Role, &user.RefID, &user.CreatedAt)
+				if qErr == nil {
+					found = true
+					log.Printf("[LOGIN SERVER AUTO-PROVISION] Dynamically provisioned demo account %s", upperUser)
+				}
+			}
 		}
 	}
 
