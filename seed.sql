@@ -1,13 +1,10 @@
 -- Seed data for Academic Management System (AMS)
 -- Passwords for default users: password123
 
--- 1. STUDENTS (5 Members - Simple Common Names)
+-- 1. STUDENTS (2 Members - Priya Sharma & Meenu Patel)
 INSERT INTO students (id, student_id, name, email, phone, department, program, year, section) VALUES
 (1, 'STU101', 'Priya Sharma', 'priya@university.edu', '555-0101', 'Computer Science', 'B.Tech Computer Science', 2, 'A'),
-(2, 'STU102', 'Meenu Patel', 'meenu@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B'),
-(3, 'STU103', 'Ananya Reddy', 'ananya@university.edu', '555-0103', 'Computer Science', 'B.Tech Computer Science', 1, 'A'),
-(4, 'STU104', 'Karthik Kumar', 'karthik@university.edu', '555-0104', 'Information Technology', 'B.Tech IT', 4, 'C'),
-(5, 'STU105', 'Rahul Verma', 'rahul@university.edu', '555-0105', 'Computer Science', 'B.Tech AI & ML', 2, 'B')
+(2, 'STU102', 'Meenu Patel', 'meenu@university.edu', '555-0102', 'Electrical Engineering', 'B.Tech Electrical Engineering', 3, 'B')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email, student_id = EXCLUDED.student_id;
 
 -- 2. FACULTY (5 Members)
@@ -63,13 +60,7 @@ INSERT INTO course_registrations (id, student_id, course_offering_id, status) VA
 (4, 1, 3, 'completed'),
 (5, 2, 2, 'registered'),
 (6, 2, 9, 'registered'),
-(7, 2, 4, 'completed'),
-(8, 3, 1, 'registered'),
-(9, 3, 10, 'registered'),
-(10, 4, 6, 'registered'),
-(11, 4, 11, 'registered'),
-(12, 5, 5, 'registered'),
-(13, 5, 7, 'registered')
+(7, 2, 4, 'completed')
 ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status;
 
 -- 7. RESULTS / GRADES
@@ -82,9 +73,6 @@ ON CONFLICT (id) DO UPDATE SET marks = EXCLUDED.marks, grade = EXCLUDED.grade;
 INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
 (1, 'STU101', 'priya@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'student', 1),
 (2, 'STU102', 'meenu@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'student', 2),
-(3, 'STU103', 'ananya@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'student', 3),
-(4, 'STU104', 'karthik@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'student', 4),
-(5, 'STU105', 'rahul@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'student', 5),
 (6, 'FAC201', 'seshadri@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'faculty', 1),
 (7, 'FAC202', 'meenakshi@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'faculty', 2),
 (8, 'FAC203', 'ramaswamy@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'faculty', 3),
@@ -92,3 +80,4 @@ INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
 (10, 'FAC205', 'raman@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'faculty', 5),
 (11, 'admin', 'admin@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'admin', 0)
 ON CONFLICT (username) DO UPDATE SET email = EXCLUDED.email;
+
