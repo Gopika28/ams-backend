@@ -436,10 +436,12 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	passHash := string(hash)
 
-	// 1. Ensure Students Exist (STU101 and STU102 only) & Cleanup extra demo records
+	// 1. Ensure Students Exist (STU101 and STU102 only) & Cascade delete extra records
+	db.Exec(seedCtx, `DELETE FROM results WHERE student_id > 2;`)
 	db.Exec(seedCtx, `DELETE FROM course_registrations WHERE student_id > 2;`)
-	db.Exec(seedCtx, `DELETE FROM students WHERE id > 2 OR student_id IN ('STU103','STU104','STU105');`)
-	db.Exec(seedCtx, `DELETE FROM users WHERE username IN ('STU103','STU104','STU105');`)
+	db.Exec(seedCtx, `DELETE FROM attendance WHERE student_id > 2;`)
+	db.Exec(seedCtx, `DELETE FROM users WHERE username IN ('STU103','STU104','STU105') OR (ref_id > 2 AND role = 'student');`)
+	db.Exec(seedCtx, `DELETE FROM students WHERE id > 2 OR student_id NOT IN ('STU101','STU102');`)
 
 	db.Exec(seedCtx, `INSERT INTO students (id, student_id, name, email, phone, department, program, year, section) VALUES
 		(1, 'STU101', 'Priya Sharma', 'priya@university.edu', '555-0101', 'Computer Science', 'B.Tech Computer Science', 2, 'A'),
@@ -1916,7 +1918,7 @@ func adminStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	rows, err := db.Query(ctx, `SELECT id, student_id, name, email, phone, department, program, year, section, created_at FROM students ORDER BY id ASC`)
+	rows, err := db.Query(ctx, `SELECT id, student_id, name, email, phone, department, program, year, section, created_at FROM students WHERE student_id IN ('STU101','STU102') ORDER BY id ASC`)
 	if err != nil {
 		http.Error(w, `{"error":"Database query error"}`, http.StatusInternalServerError)
 		return
@@ -2074,7 +2076,7 @@ func adminStatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var stuCount, facCount, crsCount, offCount, logCount int
 	var activeSem string
-	db.QueryRow(ctx, "SELECT COUNT(*) FROM students").Scan(&stuCount)
+	db.QueryRow(ctx, "SELECT COUNT(*) FROM students WHERE student_id IN ('STU101','STU102')").Scan(&stuCount)
 	db.QueryRow(ctx, "SELECT COUNT(*) FROM faculty").Scan(&facCount)
 	db.QueryRow(ctx, "SELECT COUNT(*) FROM courses").Scan(&crsCount)
 	db.QueryRow(ctx, "SELECT COUNT(*) FROM course_offerings").Scan(&offCount)
