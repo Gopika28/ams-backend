@@ -546,6 +546,28 @@ func seedDatabaseIfEmpty(parentCtx context.Context) {
 			log.Printf("[SEED ERROR] Failed upsert for user %s: %v", u.username, err)
 		}
 	}
+
+	// Clean up stale email logs from deleted test users (e.g. Rahul Verma)
+	db.Exec(seedCtx, `DELETE FROM email_logs WHERE recipient_email NOT IN (SELECT email FROM students) AND recipient_email NOT IN (SELECT email FROM faculty);`)
+
+	// Reset all PostgreSQL SERIAL sequences to MAX(id)
+	seqQueries := []string{
+		"SELECT setval('students_id_seq', (SELECT COALESCE(MAX(id), 1) FROM students))",
+		"SELECT setval('faculty_id_seq', (SELECT COALESCE(MAX(id), 1) FROM faculty))",
+		"SELECT setval('semesters_id_seq', (SELECT COALESCE(MAX(id), 1) FROM semesters))",
+		"SELECT setval('courses_id_seq', (SELECT COALESCE(MAX(id), 1) FROM courses))",
+		"SELECT setval('course_offerings_id_seq', (SELECT COALESCE(MAX(id), 1) FROM course_offerings))",
+		"SELECT setval('course_registrations_id_seq', (SELECT COALESCE(MAX(id), 1) FROM course_registrations))",
+		"SELECT setval('results_id_seq', (SELECT COALESCE(MAX(id), 1) FROM results))",
+		"SELECT setval('users_id_seq', (SELECT COALESCE(MAX(id), 1) FROM users))",
+		"SELECT setval('email_logs_id_seq', COALESCE((SELECT MAX(id) FROM email_logs), 1))",
+	}
+	for _, sq := range seqQueries {
+		_, err := db.Exec(seedCtx, sq)
+		if err != nil {
+			log.Printf("[SEED SEQ NOTICE] %v", err)
+		}
+	}
 }
 
 // Authentication and token utilities
@@ -650,10 +672,17 @@ University Portal`, studentName, courseCode, courseName, semesterName, courseCod
 	} else {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		db.Exec(ctx, `
+		_, err := db.Exec(ctx, `
 			INSERT INTO email_logs (recipient_email, student_name, subject, body, status)
 			VALUES ($1, $2, $3, $4, $5)
 		`, recipientEmail, studentName, subject, body, "Sent")
+		if err != nil && strings.Contains(err.Error(), "email_logs_pkey") {
+			db.Exec(ctx, "SELECT setval('email_logs_id_seq', COALESCE((SELECT MAX(id) FROM email_logs), 1))")
+			db.Exec(ctx, `
+				INSERT INTO email_logs (recipient_email, student_name, subject, body, status)
+				VALUES ($1, $2, $3, $4, $5)
+			`, recipientEmail, studentName, subject, body, "Sent")
+		}
 	}
 
 	// Real SMTP send if credentials configured
@@ -1128,9 +1157,27 @@ func studentRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	`, studentID, req.CourseOfferingID).Scan(&regID)
 
 	if err != nil {
+		log.Printf("[REGISTER DB ERROR] studentID=%d, offeringID=%d, err=%v", studentID, req.CourseOfferingID, err)
 		if strings.Contains(err.Error(), "unique_student_offering") {
 			http.Error(w, `{"error":"You are already registered for this course"}`, http.StatusBadRequest)
 			return
+		}
+		if strings.Contains(err.Error(), "course_registrations_pkey") || strings.Contains(err.Error(), "duplicate key") {
+			// Auto-repair sequence and retry registration insert
+			db.Exec(ctx, "SELECT setval('course_registrations_id_seq', (SELECT COALESCE(MAX(id), 1) FROM course_registrations))")
+			err = db.QueryRow(ctx, `
+				INSERT INTO course_registrations (student_id, course_offering_id, status)
+				VALUES ($1, $2, 'registered')
+				RETURNING id
+			`, studentID, req.CourseOfferingID).Scan(&regID)
+			if err == nil {
+				w.WriteHeader(http.StatusCreated)
+				json.NewEncoder(w).Encode(map[string]interface{}{
+					"message": "Successfully registered for course",
+					"id":      regID,
+				})
+				return
+			}
 		}
 		http.Error(w, `{"error":"Failed to complete course registration"}`, http.StatusInternalServerError)
 		return
@@ -1918,7 +1965,7 @@ func adminStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	rows, err := db.Query(ctx, `SELECT id, student_id, name, email, phone, department, program, year, section, created_at FROM students WHERE student_id IN ('STU101','STU102') ORDER BY id ASC`)
+	rows, err := db.Query(ctx, `SELECT id, student_id, name, email, phone, department, program, year, section, created_at FROM students ORDER BY id ASC`)
 	if err != nil {
 		http.Error(w, `{"error":"Database query error"}`, http.StatusInternalServerError)
 		return
@@ -2076,7 +2123,7 @@ func adminStatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var stuCount, facCount, crsCount, offCount, logCount int
 	var activeSem string
-	db.QueryRow(ctx, "SELECT COUNT(*) FROM students WHERE student_id IN ('STU101','STU102')").Scan(&stuCount)
+	db.QueryRow(ctx, "SELECT COUNT(*) FROM students").Scan(&stuCount)
 	db.QueryRow(ctx, "SELECT COUNT(*) FROM faculty").Scan(&facCount)
 	db.QueryRow(ctx, "SELECT COUNT(*) FROM courses").Scan(&crsCount)
 	db.QueryRow(ctx, "SELECT COUNT(*) FROM course_offerings").Scan(&offCount)

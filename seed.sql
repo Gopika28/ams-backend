@@ -81,3 +81,13 @@ INSERT INTO users (id, username, email, password_hash, role, ref_id) VALUES
 (11, 'admin', 'admin@university.edu', '$2a$10$425XF9O/v5K1X0lQe.0dneW1d15QZ87Xp9J4U.U1E9v0J8O8wL6kK', 'admin', 0)
 ON CONFLICT (username) DO UPDATE SET email = EXCLUDED.email;
 
+-- 9. RESET SERIAL SEQUENCES
+SELECT setval('students_id_seq', (SELECT COALESCE(MAX(id), 1) FROM students));
+SELECT setval('faculty_id_seq', (SELECT COALESCE(MAX(id), 1) FROM faculty));
+SELECT setval('semesters_id_seq', (SELECT COALESCE(MAX(id), 1) FROM semesters));
+SELECT setval('courses_id_seq', (SELECT COALESCE(MAX(id), 1) FROM courses));
+SELECT setval('course_offerings_id_seq', (SELECT COALESCE(MAX(id), 1) FROM course_offerings));
+SELECT setval('course_registrations_id_seq', (SELECT COALESCE(MAX(id), 1) FROM course_registrations));
+SELECT setval('results_id_seq', (SELECT COALESCE(MAX(id), 1) FROM results));
+SELECT setval('users_id_seq', (SELECT COALESCE(MAX(id), 1) FROM users));
+SELECT setval('email_logs_id_seq', COALESCE((SELECT MAX(id) FROM email_logs), 1));
