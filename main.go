@@ -1190,6 +1190,55 @@ func studentRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func studentNotificationsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	claims, ok := getClaimsFromContext(r)
+	if !ok || (claims.Role != "student" && claims.Role != "admin") {
+		http.Error(w, `{"error":"Forbidden: Student access required"}`, http.StatusForbidden)
+		return
+	}
+
+	studentEmail := claims.Email
+
+	if useMemoryDB {
+		memMutex.RLock()
+		defer memMutex.RUnlock()
+		var list []EmailLog
+		for _, l := range memEmailLogs {
+			if strings.EqualFold(l.RecipientEmail, studentEmail) {
+				list = append(list, l)
+			}
+		}
+		json.NewEncoder(w).Encode(list)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := db.Query(ctx, `
+		SELECT id, recipient_email, student_name, subject, body, status, sent_at
+		FROM email_logs
+		WHERE LOWER(recipient_email) = LOWER($1)
+		ORDER BY id DESC
+	`, studentEmail)
+
+	if err != nil {
+		json.NewEncoder(w).Encode([]EmailLog{})
+		return
+	}
+	defer rows.Close()
+
+	list := []EmailLog{}
+	for rows.Next() {
+		var l EmailLog
+		if err := rows.Scan(&l.ID, &l.RecipientEmail, &l.StudentName, &l.Subject, &l.Body, &l.Status, &l.SentAt); err == nil {
+			list = append(list, l)
+		}
+	}
+	json.NewEncoder(w).Encode(list)
+}
+
 // Faculty HTTP handlers
 
 func facultyProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -2219,6 +2268,7 @@ func main() {
 	mux.HandleFunc("/api/student/courses", authMiddleware(studentCoursesHandler))
 	mux.HandleFunc("/api/student/available-courses", authMiddleware(studentAvailableCoursesHandler))
 	mux.HandleFunc("/api/student/register", authMiddleware(studentRegisterHandler))
+	mux.HandleFunc("/api/student/notifications", authMiddleware(studentNotificationsHandler))
 
 	// Faculty Routes
 	mux.HandleFunc("/api/faculty/profile", authMiddleware(facultyProfileHandler))
