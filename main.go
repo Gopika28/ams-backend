@@ -1897,6 +1897,10 @@ func emailLogsHandler(w http.ResponseWriter, r *http.Request) {
 	if useMemoryDB {
 		memMutex.RLock()
 		defer memMutex.RUnlock()
+		if memEmailLogs == nil {
+			json.NewEncoder(w).Encode([]EmailLog{})
+			return
+		}
 		json.NewEncoder(w).Encode(memEmailLogs)
 		return
 	}
@@ -1909,7 +1913,7 @@ func emailLogsHandler(w http.ResponseWriter, r *http.Request) {
 		FROM email_logs ORDER BY id DESC LIMIT 50
 	`)
 	if err != nil {
-		http.Error(w, `{"error":"Failed to fetch email logs"}`, http.StatusInternalServerError)
+		json.NewEncoder(w).Encode([]EmailLog{})
 		return
 	}
 	defer rows.Close()
@@ -1918,11 +1922,9 @@ func emailLogsHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var l EmailLog
 		err := rows.Scan(&l.ID, &l.RecipientEmail, &l.StudentName, &l.Subject, &l.Body, &l.Status, &l.SentAt)
-		if err != nil {
-			http.Error(w, `{"error":"Scan error"}`, http.StatusInternalServerError)
-			return
+		if err == nil {
+			logs = append(logs, l)
 		}
-		logs = append(logs, l)
 	}
 
 	json.NewEncoder(w).Encode(logs)
